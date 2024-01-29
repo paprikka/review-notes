@@ -1,5 +1,6 @@
 import os
 import ollama
+import time
 
 # Path to your Obsidian vault
 dir_path = "/Users/raf/Library/Mobile Documents/iCloud~md~obsidian/Documents/sol/Diary/"
@@ -67,24 +68,32 @@ for file in sorted_files:
 print(f"Loaded {len(file_contents)} files")
 print("🏁 Summarising...")
 
+start_time = time.time()
+
+
 current_dir = os.path.dirname(os.path.realpath(__file__))
 summaries_file_path = os.path.join(current_dir, "summaries.md")
 
 if os.path.exists(summaries_file_path):
     os.remove(summaries_file_path)
 
-for content in file_contents:
-    note = summarise_single_note(content)
-    with open(summaries_file_path, "w") as result_file:
-        result_file.write(f"{note}\n\n------\n\n")
-
 beautiful_things_path = os.path.join(current_dir, "beautiful_things.md")
 if os.path.exists(beautiful_things_path):
     os.remove(beautiful_things_path)
 
-for content in file_contents:
+for index, content in enumerate(file_contents):
+    print(f"Summarising ({index + 1} of {len(file_contents)})...")
+    note = summarise_single_note(content)
+    with open(summaries_file_path, "a") as result_file:
+        result_file.write(f"## {index + 1}\n\n{note}\n\n")
+
+for index, content in enumerate(file_contents):
+    print(f"Extracting beautiful things ({index + 1} of {len(file_contents)})...")
     note = list_beautiful_things(content)
-    with open(beautiful_things_path, "w") as result_file:
-        result_file.write(f"{note}\n\n------\n\n")
+    with open(beautiful_things_path, "a") as result_file:
+        result_file.write(f"## {index + 1}\n\n{note}\n\n")
+
 
 print("\n\n👍 Done!")
+total_time = time.time() - start_time
+print(f"Time taken: {round(time.time() - start_time, 1)} seconds")
